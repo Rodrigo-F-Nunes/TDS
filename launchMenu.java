@@ -16,6 +16,7 @@ public class launchMenu implements ActionListener{
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(720,720);
+        frame.setResizable(false);
         frame.setLayout(null);
         frame.setVisible(true);
 
