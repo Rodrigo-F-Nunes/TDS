@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.swing.*;
 
 public class gameWindow extends JFrame implements KeyListener {
@@ -14,8 +15,10 @@ public class gameWindow extends JFrame implements KeyListener {
     int frameHeight;
     final int playerMovement = 3;
     final int projectileMovement = 5;
+    final int enemyMovement = 1;
     List<JPanel> activeProjectiles;
-    Timer gameLoopTimer;
+    List<JPanel> activeEnemies;
+    Timer gameLoopTimer, timeToSpawn;
 
     gameWindow(){
 
@@ -26,20 +29,30 @@ public class gameWindow extends JFrame implements KeyListener {
         this.addKeyListener(this);
 
         playerCharacter = new JPanel();
-
         playerCharacter.setBounds(600, 600, 15, 15);
         playerCharacter.setBackground(Color.BLACK);
         playerCharacter.setOpaque(true);
 
         activeProjectiles = new ArrayList<>();
+        activeEnemies = new ArrayList<>();
 
         gameLoopTimer = new Timer(20, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 updateProjectiles();
+                updateEnemy();
+                collisionHandler(); //TODO
             }
         });
         gameLoopTimer.start();
+
+        timeToSpawn = new Timer(4500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                spawnEnemy();
+            }
+        });
+        timeToSpawn.start();
 
         this.add(playerCharacter);
         this.setVisible(true);
@@ -62,17 +75,20 @@ public class gameWindow extends JFrame implements KeyListener {
     }
 
     void spawnProjectile() {
+
         JPanel newProjectile = new JPanel();
         newProjectile.setBounds(playerCharacter.getX() + 6, playerCharacter.getY() - 10, 3, 9);
         newProjectile.setBackground(Color.RED);
-        this.add(newProjectile); // turns the projectile visible
+        this.add(newProjectile);
 
-            // might as well add a cooldown for it later
+            //TODO add a cooldown for it later
 
         activeProjectiles.add(newProjectile);
+
         this.revalidate();
         this.repaint();
     }
+
     private void updateProjectiles() {
         List<JPanel> projectilesToRemove = new ArrayList<>();
 
@@ -92,6 +108,40 @@ public class gameWindow extends JFrame implements KeyListener {
 
         this.revalidate();
         this.repaint();
+    }
+
+    public void spawnEnemy(){
+        JPanel newEnemy = new JPanel();
+        Random setEnemyX = new Random();
+        newEnemy.setBounds(setEnemyX.nextInt(frameWidth - 15), 0, 15, 15);
+        newEnemy.setBackground(Color.GREEN);
+        this.add(newEnemy);
+        activeEnemies.add(newEnemy);
+    }
+
+    public void updateEnemy() {
+        List<JPanel> enemiesToRemove = new ArrayList<>();
+
+        for (JPanel enemy : activeEnemies) {
+            int newY = enemy.getY() + enemyMovement;
+            enemy.setLocation(enemy.getX(), newY);
+
+            if (newY > frameHeight) {
+                enemiesToRemove.add(enemy);
+            }
+        }
+
+        for (JPanel enemy : enemiesToRemove) {
+            this.remove(enemy);
+            activeEnemies.remove(enemy);
+        }
+
+        this.revalidate();
+        this.repaint();
+    }
+
+    public void collisionHandler(){
+        //TODO
     }
 
     @Override
