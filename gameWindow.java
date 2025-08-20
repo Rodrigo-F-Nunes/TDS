@@ -41,7 +41,7 @@ public class gameWindow extends JFrame implements KeyListener {
             public void actionPerformed(ActionEvent e) {
                 updateProjectiles();
                 updateEnemy();
-                collisionHandler(); //TODO
+                collisionHandler();
             }
         });
         gameLoopTimer.start();
@@ -63,15 +63,16 @@ public class gameWindow extends JFrame implements KeyListener {
 
     void movePlayerCharacter(int x, int y){
 
-        int newXPos = playerCharacter.getX() + x;
-        int newYPos = playerCharacter.getY() + y;
+        if (gameLoopTimer.isRunning()) {
+            int newXPos = playerCharacter.getX() + x;
+            int newYPos = playerCharacter.getY() + y;
 
-        if (newXPos < 0) newXPos = 0;
-        if (newXPos + playerCharacter.getWidth() > frameWidth) {
-            newXPos = frameWidth - playerCharacter.getWidth();
+            if (newXPos < 0) newXPos = 0;
+            if (newXPos + playerCharacter.getWidth() > frameWidth) {
+                newXPos = frameWidth - playerCharacter.getWidth();
+            }
+            playerCharacter.setLocation(newXPos, newYPos);
         }
-
-        playerCharacter.setLocation(newXPos, newYPos);
     }
 
     void spawnProjectile() {
@@ -136,12 +137,53 @@ public class gameWindow extends JFrame implements KeyListener {
             activeEnemies.remove(enemy);
         }
 
+
+        for (JPanel enemy : activeEnemies){
+
+            int newY = enemy.getY() + enemyMovement;
+
+            if (newY > frameHeight) {
+                gameLoopTimer.stop();
+                timeToSpawn.stop();
+
+            }
+        }
+
         this.revalidate();
         this.repaint();
     }
 
     public void collisionHandler(){
-        //TODO
+        List<JPanel> enemiesToRemove = new ArrayList<>();
+        List<JPanel> projectilesToRemove = new ArrayList<>();
+
+        for (JPanel enemy : activeEnemies) {
+            for (JPanel projectile : activeProjectiles) {
+                if (projectile.getBounds().intersects(enemy.getBounds())) {
+                    enemiesToRemove.add(enemy);
+                    projectilesToRemove.add(projectile);
+                }
+            }
+        }
+
+        for (JPanel enemy : enemiesToRemove) {
+            this.remove(enemy);
+            activeEnemies.remove(enemy);
+        }
+        for (JPanel projectile : projectilesToRemove) {
+            this.remove(projectile);
+            activeProjectiles.remove(projectile);
+        }
+
+        for (JPanel enemy : activeEnemies){
+            if(enemy.getBounds().intersects(playerCharacter.getBounds())){
+                gameLoopTimer.stop();
+                timeToSpawn.stop();
+            }
+        }
+
+        this.revalidate();
+        this.repaint();
     }
 
     @Override
